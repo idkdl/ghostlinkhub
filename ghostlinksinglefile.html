@@ -7265,17 +7265,7 @@
         let gamesPopularityData = {};
         let gamesLoaded = false;
 
-        const zonesurls = [
-            "https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json",
-            "https://cdn.jsdelivr.net/gh/sealiee11/gnmathstuff@main/zones.json"
-        ];
-        let zonesURL = zonesurls[0];
-        const coverURL = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
-        let htmlURL = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
-        fetch("https://api.github.com/repos/freebuisness/html/commits?per_page=1&t=" + Date.now())
-            .then(r => r.json())
-            .then(j => { if (j[0] && j[0].sha) htmlURL = `https://cdn.jsdelivr.net/gh/freebuisness/html@${j[0].sha}`; })
-            .catch(() => {});
+        const ZONES_JSON_URL = "https://cdn.jsdelivr.net/gh/cmcbroski621/audio_books@main/games.json";
 
         let zones = [];
         let gamesFavorites = JSON.parse(localStorage.getItem('gn-favs') || '[]');
@@ -7289,24 +7279,13 @@
 
         async function gamesListZones() {
             try {
-                let sharesponse;
-                try {
-                    sharesponse = await fetch("https://api.github.com/repos/freebuisness/assets/commits?t=" + Date.now());
-                } catch (error) {}
-                if (sharesponse && sharesponse.status === 200) {
-                    try {
-                        let shajson = await sharesponse.json();
-                        let sha = shajson[0]['sha'];
-                        if (sha) zonesURL = `https://cdn.jsdelivr.net/gh/freebuisness/assets@${sha}/zones.json`;
-                    } catch (error) {}
-                }
-                const response = await fetch(zonesURL + "?t=" + Date.now());
+                const response = await fetch(ZONES_JSON_URL + "?t=" + Date.now());
                 zones = await response.json();
                 await gamesFetchPopularity();
                 gamesSetupFeatured();
                 gamesHandleSearch();
             } catch (error) {
-                gamesContainer.innerHTML = "Error: " + error;
+                gamesContainer.innerHTML = "Error loading games: " + error;
             }
         }
 
@@ -7362,7 +7341,7 @@
                 div.className = 'games-featured-item';
                 div.onclick = () => openZone(file);
                 const img = document.createElement('img');
-                img.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
+                img.src = file.cover;
                 const p = document.createElement('p');
                 p.textContent = file.name;
                 p.style.fontSize = "0.75rem";
@@ -7429,7 +7408,10 @@
             } else if (sortBy === 'id') {
                 filtered.sort((a, b) => b.id - a.id);
             } else {
-                filtered.sort((a, b) => (gamesPopularityData[b.id] || 0) - (gamesPopularityData[a.id] || 0));
+                for (let i = filtered.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+                }
             }
             gamesRenderGrid(filtered);
         }
@@ -7468,7 +7450,7 @@
                 heart.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
                 heart.onclick = (e) => gamesToggleHeart(e, file.id);
                 const img = document.createElement('img');
-                img.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
+                img.src = file.cover;
                 const p = document.createElement('p');
                 p.textContent = file.name;
                 div.append(heart, img, p);
@@ -7480,11 +7462,8 @@
             if (file.name === "[!] GHOSTLINK DISCORD .gg/D4c9VFYWyU") {
                 window.open("https://discord.com/invite/dKs2sUNUXd", "_blank");
                 return;
-            }
-            if (file.url.startsWith("http")) {
-                window.open(file.url, "_blank");
             } else {
-                const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
+                const url = file.url;
                 fetch(url + "?t=" + Date.now()).then(response => response.text()).then(html => {
                     html = cleanHTML(html);
                     if (!zoneFrame || zoneFrame.contentDocument === null) {
