@@ -722,16 +722,20 @@
       content: "";
       position: fixed;
       inset: 0;
-      background: linear-gradient(-45deg, #0a0a0a, #0d0d14, #140d1a, #0d0d14, #0a0a0a);
-      background-size: 400% 400%;
-      animation: gradientDrift 60s ease infinite;
-      z-index: -1;
+      background: #0a0a0a;
+      z-index: -3;
       pointer-events: none;
     }
-    @keyframes gradientDrift {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -2;
+      pointer-events: none;
+      opacity: 0.6;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
